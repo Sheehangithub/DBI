@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 
+
 # Functie om de feedback en cijfer te genereren op basis van de rubric
 def get_feedback_and_grade(criterion, level):
     feedback_rubric = {
@@ -61,13 +62,14 @@ def get_feedback_and_grade(criterion, level):
             "Uitstekend (10)": "De student is een excellente en inspirerende communicator en een drijvende kracht in het team. De student tilt het team naar een hoger niveau en lost conflicten constructief op."
         }
     }
-    
+
     grade_map = {
-        "Onvoldoende (4)": 4, "Voldoende (6)": 6, "Goed (8)": 8, 
+        "Onvoldoende (4)": 4, "Voldoende (6)": 6, "Goed (8)": 8,
         "Zeer Goed (9)": 9, "Uitstekend (10)": 10
     }
-    
+
     return feedback_rubric.get(criterion, {}).get(level, ""), grade_map.get(level, 0)
+
 
 # --- App Layout ---
 st.set_page_config(layout="wide", page_title="DBI Beoordelingsapp")
@@ -79,9 +81,9 @@ st.markdown("---")
 with st.sidebar:
     st.header("Instellingen")
     group_selection = st.selectbox("Kies een groep", [f"Groep {i}" for i in range(1, 17)])
-    
+
     st.subheader(f"Studenten in {group_selection}")
-    student_names = [st.text_input(f"Naam Student {i+1}", key=f"s{i}_{group_selection}") for i in range(4)]
+    student_names = [st.text_input(f"Naam Student {i + 1}", key=f"s{i}_{group_selection}") for i in range(4)]
 
 # Initialiseer session state als dat nog niet bestaat
 if 'beoordeling' not in st.session_state:
@@ -89,14 +91,15 @@ if 'beoordeling' not in st.session_state:
 if 'custom_feedback' not in st.session_state:
     st.session_state.custom_feedback = {}
 
-
 # Hoofd-layout met de rubric
 st.header(f"Rubric voor {group_selection}")
-st.write("Selecteer per criterium de beoordeling en voeg eventueel persoonlijke feedback toe. Het eindcijfer en de eindfeedback worden automatisch berekend.")
+st.write(
+    "Selecteer per criterium de beoordeling en voeg eventueel persoonlijke feedback toe. Het eindcijfer en de eindfeedback worden automatisch berekend.")
 
 # Definieer de rubric structuur
 rubric_structure = {
-    "Analyseren (Weging 20%)": ["Analyseren - Informatie verzamelen en interpreteren", "Analyseren - Requirements analyse"],
+    "Analyseren (Weging 20%)": ["Analyseren - Informatie verzamelen en interpreteren",
+                                "Analyseren - Requirements analyse"],
     "Adviseren (Weging 20%)": ["Adviseren - Conclusies trekken", "Adviseren - Oplossingsrichtingen en advies"],
     "Ontwerpen (Weging 15%)": ["Ontwerpen - Conceptueel en logisch ontwerp"],
     "Realiseren (Weging 15%)": ["Realiseren - Proof of Concept (PoC)"],
@@ -125,20 +128,20 @@ for main_criterion, sub_criteria in rubric_structure.items():
     for sub_criterion in sub_criteria:
         # Unieke key voor elk widget
         widget_key = f"{group_selection}_{sub_criterion}"
-        
+
         # Huidige selectie ophalen of default instellen
         current_selection = st.session_state.beoordeling.get(widget_key, "Voldoende (6)")
-        
+
         selected_level = st.selectbox(
-            label=sub_criterion.split(" - ")[1], 
+            label=sub_criterion.split(" - ")[1],
             options=options,
-            index=options.index(current_selection), # set default
+            index=options.index(current_selection),  # set default
             key=f"select_{widget_key}"
         )
-        
+
         # Update de state
         st.session_state.beoordeling[widget_key] = selected_level
-        
+
         # Feedback en cijfer ophalen
         feedback, grade = get_feedback_and_grade(sub_criterion, selected_level)
         st.info(f"Standaard feedback: {feedback}")
@@ -146,10 +149,10 @@ for main_criterion, sub_criteria in rubric_structure.items():
         # --- NIEUW: Tekstveld voor persoonlijke feedback ---
         custom_feedback_key = f"custom_feedback_{widget_key}"
         custom_feedback = st.text_area(
-            "Voeg hier persoonlijke feedback toe:", 
+            "Voeg hier persoonlijke feedback toe:",
             key=custom_feedback_key,
             height=80
-            )
+        )
 
         # Voeg toe aan eindfeedback en berekening
         if grade >= 4:
@@ -162,7 +165,7 @@ for main_criterion, sub_criteria in rubric_structure.items():
                 final_feedback_text += f"- *Persoonlijke opmerking*: {custom_feedback}\n"
             # Voeg een witregel toe voor de leesbaarheid
             final_feedback_text += "\n"
-            
+
             total_grade += grade * weging[sub_criterion]
             all_grades[sub_criterion.split(" - ")[1]] = grade
 
@@ -193,7 +196,6 @@ st.subheader("Samengestelde Eindfeedback")
 # De eindfeedback wordt nu direct hier opgebouwd en getoond
 st.markdown(final_feedback_text)
 
-
 # --- Downloadknop ---
 st.subheader("Download de beoordeling")
 
@@ -215,10 +217,11 @@ Gedetailleerde Feedback:
 file_name = f"Beoordeling_{group_selection.replace(' ', '_')}.txt"
 
 st.download_button(
-   label="Download beoordeling als .txt",
-   data=admin_output,
-   file_name=file_name,
-   mime="text/plain"
+    label="Download beoordeling als .txt",
+    data=admin_output,
+    file_name=file_name,
+    mime="text/plain"
 )
 
-st.info("Klik op de knop hierboven om de volledige beoordeling (inclusief persoonlijke opmerkingen) als een tekstbestand lokaal op te slaan.")
+st.info(
+    "Klik op de knop hierboven om de volledige beoordeling (inclusief persoonlijke opmerkingen) als een tekstbestand lokaal op te slaan.")
